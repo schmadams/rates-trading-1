@@ -1,0 +1,8 @@
+python-dotenv
+MetaTrader5
+pyyaml
+git+https://github.com/schmadams/helper-functions-v2.git#egg=helper-functions
+pandas
+MetaTrader5
+pytz
+matplotlib

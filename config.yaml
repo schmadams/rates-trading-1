@@ -1,0 +1,6 @@
+accounts:
+  demo_meta_100k:
+    login: METATRADER_DEMO_100K_USERNAME
+    password: METATRADER_DEMO_100K_PASSWORD
+    server: METATRADER_DEMO_100K_SERVER
+
