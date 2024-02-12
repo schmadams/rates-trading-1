@@ -23,3 +23,14 @@ class HistoricalDataExtractor:
 
 
 
+    def get_ticks_range(self, start: str, end: str):
+        ticks = mt5.copy_ticks_range(self.symbol, convert_to_utc(start), convert_to_utc(end), mt5.COPY_TICKS_ALL)
+        # create DataFrame out of the obtained data
+        ticks_frame = pd.DataFrame(ticks)
+        # convert time in seconds into the datetime format
+        ticks_frame['time'] = pd.to_datetime(ticks_frame['time'], unit='s')
+        ticks_frame = ticks_frame[['time', 'bid', 'ask']]
+        for col in ticks_frame.columns:
+            if col != 'time':
+                ticks_frame = ticks_frame.rename(columns={col: f'{self.symbol.lower()}_{col}'})
+        return ticks_frame

@@ -4,3 +4,12 @@ accounts:
     password: METATRADER_DEMO_100K_PASSWORD
     server: METATRADER_DEMO_100K_SERVER
 
+
+
+strategies:
+  demo_triarb_v1:
+    account: demo_meta_100k
+    lot: 0.1
+  demo_analysis:
+    account: demo_meta_100k
+    lot: 0.1

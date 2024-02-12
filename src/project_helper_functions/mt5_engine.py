@@ -2,32 +2,30 @@ import os
 import MetaTrader5 as mt5
 from src.project_helper_functions.check_env import check_env
 from src.project_helper_functions.helpers import load_config
-from logging_functions.class_logging import Logger
-
 
 check_env()
 
-class MetaTraderConnection:
-    logger = Logger(__qualname__).logger
-    def __init__(self, account: str = 'demo_meta_100k'):
-        self.config = load_config()
-        self.get_creds(account)
-        self.connect_and_auth()
+def mt5_connect_and_auth(strategy: str):
+    config = load_config()
+    account = config['strategies'][strategy]['account']
+    creds = config['accounts'][account]
+    for key, value in creds.items():
+        creds.update({
+            key: os.environ.get(value)
+        })
 
-    def get_creds(self, account: str = 'demo_meta_100k'):
-        self.creds = self.config['accounts'][account]
-        for key, value in self.creds.items():
-            self.creds.update({
-                key: os.environ.get(value)
-            })
-    def connect_and_auth(self):
-        authorized = mt5.login(self.creds['login'])
-        self.logger.info(f"Authorizing with creds {self.creds['login']}, {self.creds['server']}, {self.creds['password']}")
-        if authorized:
-            authorized = mt5.login(self.creds['login'], password=self.creds['password'])
+    # Initialize MetaTrader 5 connection
+    mt5.initialize()
 
-        init = mt5.initialize(login=int(self.creds['login']), password=self.creds['password'],
-                              server=self.creds['server'], timeout=3600000)
+    # Connect to MetaTrader 5 account and authenticate
+    authorized = mt5.login(login=int(creds['login']), password=creds['password'], server=creds['server'])
+
+    print(f"Authorizing with creds {creds['login']}, {creds['server']}, {creds['password']}")
+    if authorized:
+        print('Authentication successful')
+    else:
+        print('Authentication failed')
+        print(mt5.last_error())
 
 if __name__ == '__main__':
-    MetaTraderConnection()
+    mt5_connect_and_auth(strategy='demo_triarb_v1')
