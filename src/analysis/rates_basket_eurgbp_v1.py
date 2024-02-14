@@ -3,14 +3,15 @@ from src.project_helper_functions.mt5_engine import mt5_connect_and_auth
 import MetaTrader5 as mt5
 import matplotlib.pyplot as plt
 import pandas as pd
-from datetime import timedelta
+from datetime import timedelta, datetime
+import pytz
+
 
 
 class RatesBasketEURGBPV1:
     data = {}
 
     def __init__(self, timeframe, start, end, strategy='demo_analysis'):
-        mt5_connect_and_auth(strategy=strategy)
         self.timeframe = timeframe
         self.start, self.end = start, end
         self.run_extractors()
@@ -20,48 +21,57 @@ class RatesBasketEURGBPV1:
 
     def first_test(self):
         pos1, pos2, pos3 = None, None, None
-        lot = 0.1
+        lot = 0.01
         total = 0
+        winners = 0
+        losers = 0
         for row in self.basket_df.itertuples():
-            if row.ask_line <= self.bid_mean + (self.bid_std / 5) and pos1 == None:
+            if row.ask_line <= self.bid_mean + (self.bid_std / 10) and pos1 == None:
+            # if row.ask_line <= self.bid_mean + (self.bid_std / 5) and pos1 == None:
                 # print(row.time, row.ask_line, row.bid_line)
                 pos1 = ('buy', row.gbpusd_ask, 'GBPUSD')
                 pos2 = ('sell', row.eurusd_bid, 'EURUSD')
                 pos3 = ('buy', row.eurgbp_ask, 'EURGBP')
 
-            elif row.ask_line >= self.ask_mean - (self.ask_std / 5) and pos1 != None:
-                p1_profit = mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, pos1[2], lot, pos1[1], row.gbpusd_bid)
-                p2_profit = mt5.order_calc_profit(mt5.ORDER_TYPE_SELL, pos2[2], lot, pos2[1], row.eurusd_ask)
-                p3_profit = mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, pos3[2], lot, pos3[1], row.eurgbp_bid)
-
-                total += p1_profit + p2_profit + p3_profit
+            elif row.ask_line >= self.ask_mean - (self.ask_std / 10) and pos1 != None:
+            # elif row.ask_line >= self.ask_mean and pos1 != None:
+                p1_profit = mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, pos1[2], lot, pos1[1], row.gbpusd_bid - 1.5*mt5.symbol_info('GBPUSD').point)
+                p2_profit = mt5.order_calc_profit(mt5.ORDER_TYPE_SELL, pos2[2], lot, pos2[1], row.eurusd_ask + 0.9*mt5.symbol_info('EURUSD').point)
+                # p3_profit = mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, pos3[2], lot, pos3[1], row.eurgbp_bid - mt5.symbol_info('EURGBP').point)
+                p3_profit = 0
+                trade_prof = p1_profit + p2_profit + p3_profit
+                total += trade_prof
+                if trade_prof > 0:
+                    winners += trade_prof
+                else:
+                    losers += trade_prof
                 pos1 = None
                 pos2 = None
                 pos3 = None
 
 
-        print(self.start, self.end, total)
+        print(self.start, self.end, int(total), int(winners), int(losers))
         self.profit = total
 
     def run_extractors(self):
         eurusd_class = HistoricalDataExtractor(symbol='EURUSD')
         self.data.update(
             {
-                'eurusd': eurusd_class.get_ticks_from(start=self.start, end=self.end)
+                'eurusd': eurusd_class.get_ticks_range(start=self.start, end=self.end)
             }
         )
 
         gbpusd_class = HistoricalDataExtractor(symbol='GBPUSD')
         self.data.update(
             {
-                'gbpusd': gbpusd_class.get_ticks_from(start=self.start, end=self.end)
+                'gbpusd': gbpusd_class.get_ticks_range(start=self.start, end=self.end)
             }
         )
 
         eg_class = HistoricalDataExtractor(symbol='EURGBP')
         self.data.update(
             {
-                'eurgbp': eg_class.get_ticks_from(start=self.start, end=self.end)
+                'eurgbp': eg_class.get_ticks_range(start=self.start, end=self.end)
             }
         )
 
@@ -89,17 +99,37 @@ class RatesBasketEURGBPV1:
         merged['ask_line'] = merged['eurusd_bid_inverted'] * merged['gbpusd_ask'] * merged['eurgbp_ask']
         merged['bid_line'] = merged['eurusd_ask_inverted'] * merged['gbpusd_bid'] * merged['eurgbp_bid']
         plot_df = merged[:]
-        plt.plot(plot_df['ask_line'])
-        plt.plot(plot_df['bid_line'], c='r')
-        plt.show()
+        # plt.plot(plot_df['time'], plot_df['ask_line'])
+        # plt.plot(plot_df['time'], plot_df['bid_line'], c='r')
+        # plt.show()
 
+
+        # merged = merged[-1000:]
         self.basket_df = merged
 
 
 if __name__ == '__main__':
+    mt5_connect_and_auth(strategy='demo_triarb_v1')
+    timezone = pytz.timezone("Etc/UTC")
+
     res = []
-    for day in pd.date_range(start=pd.Timestamp('01-06-2023 00:00:00'), end=pd.Timestamp.now() - timedelta(days=1), freq='D'):
-        prof = RatesBasketEURGBPV1(timeframe=mt5.TIMEFRAME_M1, start=str(day), end=str(day + timedelta(days=1))).profit
-        res.append((day, prof))
+
+    start = datetime(year=2023, month=6, day=1, tzinfo=timezone)
+    end = datetime(year=2024, month=2, day=15, tzinfo=timezone)
+
+    for i in range((end-start).days):
+        d1 = start + (i * timedelta(days=1))
+        d2 = d1 + timedelta(days=1)
+        d1 = d1.strftime('%d-%m-%Y %H:%M:%S')
+        d2 = d2.strftime('%d-%m-%Y %H:%M:%S')
+        prof = RatesBasketEURGBPV1(timeframe=mt5.TIMEFRAME_M1, start=d1, end=d2).profit
+        # print(day, prof)
+        res.append((d1, prof))
+    res = pd.DataFrame(res, columns=['date', 'profit'])
+    res['pnl'] = res['profit'].cumsum()
+    plt.plot(res['pnl'])
+    plt.show()
+
+    print(res['profit'].sum(), res['profit'].mean())
     a=1
     a=1

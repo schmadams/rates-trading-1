@@ -33,4 +33,6 @@ class HistoricalDataExtractor:
         for col in ticks_frame.columns:
             if col != 'time':
                 ticks_frame = ticks_frame.rename(columns={col: f'{self.symbol.lower()}_{col}'})
+
+        # print(mt5.last_error())
         return ticks_frame

@@ -3,12 +3,14 @@ accounts:
     login: METATRADER_DEMO_100K_USERNAME
     password: METATRADER_DEMO_100K_PASSWORD
     server: METATRADER_DEMO_100K_SERVER
-
-
+  demo_fxpro_10k:
+    login: FXPRO_DEMO_10K_USERNAME
+    password: FXPRO_DEMO_10K_PASSWORD
+    server: FXPRO_DEMO_10K_SERVER
 
 strategies:
   demo_triarb_v1:
-    account: demo_meta_100k
+    account: demo_fxpro_10k
     lot: 0.1
   demo_analysis:
     account: demo_meta_100k
