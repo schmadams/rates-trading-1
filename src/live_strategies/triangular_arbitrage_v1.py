@@ -23,7 +23,7 @@ class TriangleArb:
     def get_signal_params(self):
         timezone = pytz.timezone("Etc/UTC")
         symbols = ['EURUSD', 'GBPUSD', 'EURGBP']
-        start = datetime.now(tz=timezone) - timedelta(days=14)
+        start = datetime.now(tz=timezone) - timedelta(days=7)
         end = datetime.now(tz=timezone)
 
         raw_data = {symbol: [] for symbol in symbols}
