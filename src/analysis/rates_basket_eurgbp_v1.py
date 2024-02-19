@@ -21,22 +21,25 @@ class RatesBasketEURGBPV1:
 
     def first_test(self):
         pos1, pos2, pos3 = None, None, None
-        lot = 0.01
+        lot = 0.1
         total = 0
         winners = 0
         losers = 0
+        close_level = self.ask_mean - self.ask_std
+        open_level = self.bid_mean + self.bid_std
+        print(open_level, close_level)
         for row in self.basket_df.itertuples():
-            if row.ask_line <= self.bid_mean + (self.bid_std / 10) and pos1 == None:
+            if row.ask_line <= open_level and pos1 == None:
             # if row.ask_line <= self.bid_mean + (self.bid_std / 5) and pos1 == None:
                 # print(row.time, row.ask_line, row.bid_line)
                 pos1 = ('buy', row.gbpusd_ask, 'GBPUSD')
                 pos2 = ('sell', row.eurusd_bid, 'EURUSD')
                 pos3 = ('buy', row.eurgbp_ask, 'EURGBP')
 
-            elif row.ask_line >= self.ask_mean - (self.ask_std / 10) and pos1 != None:
+            elif row.ask_line >= close_level and pos1 != None:
             # elif row.ask_line >= self.ask_mean and pos1 != None:
-                p1_profit = mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, pos1[2], lot, pos1[1], row.gbpusd_bid - 1.5*mt5.symbol_info('GBPUSD').point)
-                p2_profit = mt5.order_calc_profit(mt5.ORDER_TYPE_SELL, pos2[2], lot, pos2[1], row.eurusd_ask + 0.9*mt5.symbol_info('EURUSD').point)
+                p1_profit = mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, pos1[2], lot, pos1[1], row.gbpusd_bid)
+                p2_profit = mt5.order_calc_profit(mt5.ORDER_TYPE_SELL, pos2[2], lot, pos2[1], row.eurusd_ask)
                 # p3_profit = mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, pos3[2], lot, pos3[1], row.eurgbp_bid - mt5.symbol_info('EURGBP').point)
                 p3_profit = 0
                 trade_prof = p1_profit + p2_profit + p3_profit

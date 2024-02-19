@@ -55,6 +55,8 @@ class TriangleArb:
         basket_df = basket_df[(basket_df['day_time'] >= pd.to_datetime('09:00:00').time()) & (
                     basket_df['day_time'] <= pd.to_datetime('21:00:00').time())]
 
+        plot_df = basket_df[-500000:]
+
         self.ask_mean = basket_df['ask_line'].mean()
         self.bid_mean = basket_df['bid_line'].mean()
         self.ask_std = basket_df['ask_line'].std()
@@ -63,9 +65,9 @@ class TriangleArb:
 
     def run_strategy(self):
         gu_pos, eu_pos, eg_pos = None, None, None
-        open_level = (self.bid_mean + 3*(self.bid_std / 1))
+        open_level = (self.bid_mean + 3*(self.bid_std))
         # close_level = (self.ask_mean - (self.ask_std / 1))
-        close_level = 1.00008
+        close_level = (self.ask_mean - 3*(self.ask_std))
         print(f'OPEN LEVEL = {round(open_level, 5)}'
               f' - CLOSE LEVEL = {round(close_level, 5)}')
         while True:
@@ -75,6 +77,9 @@ class TriangleArb:
             eu_ask, eu_bid = eurusd.ask, eurusd.bid
             gu_ask, gu_bid = gbpusd.ask, gbpusd.bid
             eg_ask, eg_bid = eurgbp.ask, eurgbp.bid
+            print(f'ask_line = {round(((1 / eu_bid) * gu_ask * eg_ask), 5)}'
+                                              f' open level = {round(open_level, 5)}'
+                                              f' close level = {round(close_level, 5)}')
 
 
             if (1 / eu_bid * gu_ask * eg_ask) <= open_level and gu_pos == None and eu_pos == None and eg_pos == None:

@@ -7,11 +7,20 @@ accounts:
     login: FXPRO_DEMO_10K_USERNAME
     password: FXPRO_DEMO_10K_PASSWORD
     server: FXPRO_DEMO_10K_SERVER
+  demo_icmkt_200:
+    login: ICMKT_DEMO_200_USERNAME
+    password: ICMKT_DEMO_200_PASSWORD
+    server: ICMKT_DEMO_200_SERVER
+  demo_ava_10k:
+    login: AVATRADE_DEMO_10K_USERNAME
+    password: AVATRADE_DEMO_10K_PASSWORD
+    server: AVATRADE_DEMO_10K_SERVER
 
 strategies:
   demo_triarb_v1:
-    account: demo_fxpro_10k
+    account: demo_ava_10k
     lot: 0.1
   demo_analysis:
     account: demo_meta_100k
     lot: 0.1
+
