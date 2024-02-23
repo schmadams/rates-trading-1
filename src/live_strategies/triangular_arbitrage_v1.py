@@ -60,8 +60,8 @@ class TriangleArb:
         ask_mean, bid_mean, ask_std, bid_std = self.get_bid_ask_stats()
         print(ask_mean, bid_mean, ask_std, bid_std)
         close_level = ask_mean + ask_std
-        # open_level_1 = ask_mean - (ask_mean - bid_mean) / 2
-        open_level_1 = ask_mean
+        open_level_1 = ask_mean - (ask_mean - bid_mean) / 2
+        # open_level_1 = ask_mean
         open_level_2 = bid_mean + bid_std
         open_level_3 = bid_mean
         open_level_4 = bid_mean - bid_std

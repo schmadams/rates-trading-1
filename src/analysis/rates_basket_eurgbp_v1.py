@@ -47,6 +47,11 @@ class RatesBasketEURGBPV1:
                     del pos2[idx]
 
 
+            if row.ask_line <= open_level_1:
+                print('placing trade')
+                a=1
+                a=1
+
             if row.ask_line <= open_level_1 and row.ask_line > open_level_2:
                 if len(pos1) < trade_limit:
                     pos1.append(('buy', row.gbpusd_ask, 'GBPUSD', lot1))
@@ -142,8 +147,8 @@ if __name__ == '__main__':
 
     res = []
 
-    start = datetime(year=2024, month=1, day=1, tzinfo=timezone)
-    end = datetime(year=2024, month=2, day=23, tzinfo=timezone)
+    start = datetime(year=2024, month=2, day=23, tzinfo=timezone)
+    end = datetime(year=2024, month=2, day=24, tzinfo=timezone)
 
     for i in range((end-start).days):
         d1 = start + (i * timedelta(days=1))
