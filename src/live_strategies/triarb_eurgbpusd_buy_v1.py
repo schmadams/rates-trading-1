@@ -11,7 +11,6 @@ from datetime import timedelta, datetime
 import pytz
 import logging
 
-
 current_time = pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')
 
 # Configure logging to write to a file, with the desired log level and format including the current time
