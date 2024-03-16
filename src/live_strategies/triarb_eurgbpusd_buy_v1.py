@@ -21,13 +21,15 @@ logging.basicConfig(filename='../logs/run_{}.log'.format(current_time), filemode
 
 
 class TriangleArb:
-    def __init__(self, lot: float, deviation: list, stop_loss: float):
+    def __init__(self, lot: float, deviation: list, stop_loss: float, take_profit: float, trade_limit: int):
         self.lot1 = lot
         self.lot2 = lot * 2
         self.lot3 = lot * 3
         self.lot4 = lot * 4
         self.stop_loss = stop_loss
+        self.take_profit = take_profit
         self.deviation = deviation
+        self.trade_limit = trade_limit
 
     def get_bid_ask_stats(self):
         timezone = pytz.timezone("Etc/UTC")
@@ -58,8 +60,8 @@ class TriangleArb:
     def open_close_levels(self):
         ask_mean, bid_mean, ask_std, bid_std = self.get_bid_ask_stats()
         print(ask_mean, bid_mean, ask_std, bid_std)
-        close_level = ask_mean + ask_std
-        open_level_1 = ask_mean - (ask_mean - bid_mean) / 2
+        close_level = ask_mean + 2*ask_std
+        open_level_1 = ask_mean - (ask_mean - bid_mean)/2
         # open_level_1 = ask_mean
         open_level_2 = bid_mean + bid_std
         open_level_3 = bid_mean
@@ -92,48 +94,48 @@ class TriangleArb:
                   f'open4={round(open4, 5)}', f'close={round(close, 5)}')
 
             if index_val <= open1 and index_val > open2:
-                if len(gbpusd_pos) < 5:
+                if len(gbpusd_pos) < self.trade_limit:
                     logging.info(f'GBPUSD BUY ORDER at {gu_ask} - index_val={index_val} - Open Level = {open1}')
-                    res = buy_order(symbol='GBPUSD', lot=self.lot1, price=gu_ask,
-                                    deviation=self.deviation, stop_loss=self.stop_loss)
+                    res = buy_order(symbol='GBPUSD', lot=self.lot1, ask_price=gu_ask, bid_price=gu_bid,
+                                    deviation=self.deviation, stop_loss=self.stop_loss, take_profit=self.take_profit)
                     logging.info(f'{res}')
-                if len(eurusd_pos) < 5:
+                if len(eurusd_pos) < self.trade_limit:
                     logging.info(f'EURUSD SELL ORDER at {eu_bid} - index_val={index_val} - Open Level = {open1}')
-                    res = sell_order(symbol='EURUSD', lot=self.lot1, price=eu_bid,
-                               deviation=self.deviation, stop_loss=self.stop_loss)
+                    res = sell_order(symbol='EURUSD', lot=self.lot1, bid_price=eu_bid, ask_price=eu_ask,
+                               deviation=self.deviation, stop_loss=self.stop_loss, take_profit=self.take_profit)
                     logging.info(f'{res}')
             elif index_val <= open2 and index_val > open3:
-                if len(gbpusd_pos) < 5:
+                if len(gbpusd_pos) < self.trade_limit:
                     logging.info(f'GBPUSD BUY ORDER at {gu_ask} - index_val={index_val} - Open Level = {open2}')
-                    res = buy_order(symbol='GBPUSD', lot=self.lot2, price=gu_ask,
-                              deviation=self.deviation, stop_loss=self.stop_loss)
+                    res = buy_order(symbol='GBPUSD', lot=self.lot2, ask_price=gu_ask, bid_price=gu_bid,
+                              deviation=self.deviation, stop_loss=self.stop_loss, take_profit=self.take_profit)
                     logging.info(f'{res}')
-                if len(eurusd_pos) < 5:
+                if len(eurusd_pos) < self.trade_limit:
                     logging.info(f'EURUSD SELL ORDER at {eu_bid} - index_val={index_val} - Open Level = {open2}')
-                    res = sell_order(symbol='EURUSD', lot=self.lot2, price=eu_bid,
-                               deviation=self.deviation, stop_loss=self.stop_loss)
+                    res = sell_order(symbol='EURUSD', lot=self.lot2, bid_price=eu_bid, ask_price=eu_ask,
+                               deviation=self.deviation, stop_loss=self.stop_loss, take_profit=self.take_profit)
                     logging.info(f'{res}')
             elif index_val <= open3 and index_val > open4:
-                if len(gbpusd_pos) < 5:
+                if len(gbpusd_pos) < self.trade_limit:
                     logging.info(f'GBPUSD BUY ORDER at {gu_ask} - index_val={index_val} - Open Level = {open3}')
-                    res = buy_order(symbol='GBPUSD', lot=self.lot3, price=gu_ask,
-                              deviation=self.deviation, stop_loss=self.stop_loss)
+                    res = buy_order(symbol='GBPUSD', lot=self.lot3, ask_price=gu_ask, bid_price=gu_bid,
+                              deviation=self.deviation, stop_loss=self.stop_loss, take_profit=self.take_profit)
                     logging.info(f'{res}')
-                if len(eurusd_pos) < 5:
+                if len(eurusd_pos) < self.trade_limit:
                     logging.info(f'EURUSD SELL ORDER at {eu_bid} - index_val={index_val} - Open Level = {open3}')
-                    res = sell_order(symbol='EURUSD', lot=self.lot3, price=eu_bid,
-                               deviation=self.deviation, stop_loss=self.stop_loss)
+                    res = sell_order(symbol='EURUSD', lot=self.lot3, bid_price=eu_bid, ask_price=eu_ask,
+                               deviation=self.deviation, stop_loss=self.stop_loss, take_profit=self.take_profit)
                     logging.info(f'{res}')
             elif index_val <= open4:
-                if len(gbpusd_pos) < 5:
+                if len(gbpusd_pos) < self.trade_limit:
                     logging.info(f'GBPUSD BUY ORDER at {gu_ask} - index_val={index_val} - Open Level = {open4}')
-                    res = buy_order(symbol='GBPUSD', lot=self.lot4, price=gu_ask,
-                              deviation=self.deviation, stop_loss=self.stop_loss)
+                    res = buy_order(symbol='GBPUSD', lot=self.lot4, ask_price=gu_ask, bid_price=gu_bid,
+                              deviation=self.deviation, stop_loss=self.stop_loss, take_profit=self.take_profit)
                     logging.info(f'{res}')
-                if len(eurusd_pos) < 5:
+                if len(eurusd_pos) < self.trade_limit:
                     logging.info(f'EURUSD SELL ORDER at {eu_bid} - index_val={index_val} - Open Level = {open4}')
-                    res = sell_order(symbol='EURUSD', lot=self.lot4, price=eu_bid,
-                               deviation=self.deviation, stop_loss=self.stop_loss)
+                    res = sell_order(symbol='EURUSD', lot=self.lot4, bid_price=eu_bid, ask_price=eu_ask,
+                               deviation=self.deviation, stop_loss=self.stop_loss, take_profit=self.take_profit)
                     logging.info(f'{res}')
 
             if index_val >= close:
@@ -149,5 +151,5 @@ class TriangleArb:
 
 if __name__ == '__main__':
     mt5_connect_and_auth(strategy='demo_triarb_v1')
-    triarb = TriangleArb(lot=0.01, deviation=[0, 0], stop_loss=0.002)
+    triarb = TriangleArb(lot=0.01, deviation=[0], stop_loss=0.002, take_profit=0.01, trade_limit=50)
     triarb.run_strategy()

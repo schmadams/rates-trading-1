@@ -20,69 +20,88 @@ class RatesBasketEURUSDGBPUSDEURGBP:
 
     def first_test(self):
         pos1, pos2 = [], []
-        stop_loss = 0.002
+        stop_loss, sl, tp = 0.002, 1.5, 1
         trade_limit = 5
         lot1, lot2, lot3, lot4, total, winners, losers = 0.01, 0.02, 0.03, 0.04, 0, 0, 0
         eurusd_prof, gbpusd_prof, num_trades = 0, 0, 0
-        close_level = self.ask_mean + self.ask_std
-        open_level_1 = self.ask_mean - (self.ask_mean - self.bid_mean)/2
+        # close_level = self.ask_mean + self.ask_std
+        open_level_1 = self.ask_mean - (self.ask_mean - self.bid_mean)/4
         open_level_2 = self.bid_mean + self.bid_std
         open_level_3 = self.bid_mean
         open_level_4 = self.bid_mean - self.bid_std
         print(self.ask_mean, open_level_1, open_level_2, open_level_3)
         for row in self.basket_df.itertuples():
             for idx, pos in enumerate(pos1):
-                if row.gbpusd_bid <= pos[1] - stop_loss:
-                    total += mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, pos[2], pos[3], pos[1], row.gbpusd_bid)
-                    gbpusd_prof += mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, pos[2], pos[3], pos[1], row.gbpusd_bid)
+                if row.gbpusd_bid <= pos[-2]:
+                    total += mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, pos[2], pos[3], pos[1], pos[-2])
+                    gbpusd_prof += mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, pos[2], pos[3], pos[1], pos[-2])
                     # print(f'stop loss with profit of '
                     #       f'{mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, pos[2], pos[3], pos[1], row.gbpusd_bid)}')
                     del pos1[idx]
 
             for idx, pos in enumerate(pos2):
-                if row.eurusd_ask >= pos[1] + stop_loss:
-                    total += mt5.order_calc_profit(mt5.ORDER_TYPE_SELL, pos[2], pos[3], pos[1], row.eurusd_ask)
-                    eurusd_prof += mt5.order_calc_profit(mt5.ORDER_TYPE_SELL, pos[2], pos[3], pos[1], row.eurusd_ask)
+                if row.eurusd_ask >= pos[-2]:
+                    total += mt5.order_calc_profit(mt5.ORDER_TYPE_SELL, pos[2], pos[3], pos[1], pos[-2])
+                    eurusd_prof += mt5.order_calc_profit(mt5.ORDER_TYPE_SELL, pos[2], pos[3], pos[1], pos[-2])
                     del pos2[idx]
 
 
             if row.ask_line <= open_level_1 and row.ask_line > open_level_2:
                 if len(pos1) < trade_limit:
-                    pos1.append(('buy', row.gbpusd_ask, 'GBPUSD', lot1))
+                    pos1.append(('buy', row.gbpusd_ask, 'GBPUSD', lot1, row.time,
+                                 row.gbpusd_bid - sl*mt5.symbol_info('GBPUSD').point,
+                                 row.gbpusd_ask + tp*mt5.symbol_info('GBPUSD').point))
                 if len(pos2) < trade_limit:
-                    pos2.append(('sell', row.eurusd_bid, 'EURUSD', lot1))
+                    pos2.append(('sell', row.eurusd_bid, 'EURUSD', lot1, row.time,
+                                 row.gbpusd_bid + sl*mt5.symbol_info('EURUSD').point,
+                                 row.gbpusd_ask - tp*mt5.symbol_info('EURUSD').point))
 
             elif row.ask_line <= open_level_2 and row.ask_line > open_level_3:
                 if len(pos1) < trade_limit:
-                    pos1.append(('buy', row.gbpusd_ask, 'GBPUSD', lot2))
+                    pos1.append(('buy', row.gbpusd_ask, 'GBPUSD', lot2, row.time,
+                                 row.gbpusd_bid - sl*mt5.symbol_info('GBPUSD').point,
+                                 row.gbpusd_ask + tp*mt5.symbol_info('GBPUSD').point))
                 if len(pos2) < trade_limit:
-                    pos2.append(('sell', row.eurusd_bid, 'EURUSD', lot2))
+                    pos2.append(('sell', row.eurusd_bid, 'EURUSD', lot2, row.time,
+                                 row.gbpusd_bid + sl*mt5.symbol_info('EURUSD').point,
+                                 row.gbpusd_ask - tp*mt5.symbol_info('EURUSD').point))
 
             elif row.ask_line <= open_level_3 and row.ask_line > open_level_4:
                 if len(pos1) < trade_limit:
-                    pos1.append(('buy', row.gbpusd_ask, 'GBPUSD', lot3))
+                    pos1.append(('buy', row.gbpusd_ask, 'GBPUSD', lot3, row.time,
+                                 row.gbpusd_bid - sl*mt5.symbol_info('GBPUSD').point,
+                                 row.gbpusd_ask + tp*mt5.symbol_info('GBPUSD').point))
                 if len(pos2) < trade_limit:
-                    pos2.append(('sell', row.eurusd_bid, 'EURUSD', lot3))
+                    pos2.append(('sell', row.eurusd_bid, 'EURUSD', lot3, row.time,
+                                 row.gbpusd_bid + sl*mt5.symbol_info('EURUSD').point,
+                                 row.gbpusd_ask - tp*mt5.symbol_info('EURUSD').point))
 
             elif row.ask_line <= open_level_4:
                 if len(pos1) < trade_limit:
-                    pos1.append(('buy', row.gbpusd_ask, 'GBPUSD', lot4))
+                    pos1.append(('buy', row.gbpusd_ask, 'GBPUSD', lot4, row.time,
+                                 row.gbpusd_bid - sl*mt5.symbol_info('GBPUSD').point,
+                                 row.gbpusd_ask + tp*mt5.symbol_info('GBPUSD').point))
                 if len(pos2) < trade_limit:
-                    pos2.append(('sell', row.eurusd_bid, 'EURUSD', lot4))
+                    pos2.append(('sell', row.eurusd_bid, 'EURUSD', lot4, row.time,
+                                 row.gbpusd_bid + sl*mt5.symbol_info('EURUSD').point,
+                                 row.gbpusd_ask - tp*mt5.symbol_info('EURUSD').point))
 
 
             # if row.ask_line >= close_level:
-            if row.bid_line >= self.bid_mean:
-                for idx, pos in enumerate(pos1):
-                    print(row.time, 'close buy', pos[3])
+            # if row.bid_line >= self.bid_mean + self.bid_std:
+            for idx, pos in enumerate(pos1):
+                if row.gbpusd_bid >= pos[-1]:
                     trade_prof = mt5.order_calc_profit(mt5.ORDER_TYPE_BUY, pos[2], pos[3], pos[1], row.gbpusd_bid)
                     total += trade_prof
+                    # print(f'close buy - trade open = {pos[4]} trade close = {row.time} volumne = {pos[3]}')
                     gbpusd_prof += trade_prof
                     num_trades += 1
                     del pos1[idx], trade_prof
 
-                for idx, pos in enumerate(pos2):
+            for idx, pos in enumerate(pos2):
+                if row.eurusd_ask <= pos[-1]:
                     trade_prof = mt5.order_calc_profit(mt5.ORDER_TYPE_SELL, pos[2], pos[3], pos[1], row.eurusd_ask)
+                    # print(f'close buy - trade open = {pos[4]} trade close = {row.time} volumne = {pos[3]}')
                     total += trade_prof
                     eurusd_prof += trade_prof
                     num_trades += 1
@@ -101,6 +120,7 @@ class RatesBasketEURUSDGBPUSDEURGBP:
                 break
 
         print(self.start, self.end, int(total), num_trades)
+        print(f'EURUSD PROFIT = {eurusd_prof} and GBPUSD PROFIT = {gbpusd_prof} ')
         return total, eurusd_prof, gbpusd_prof, num_trades
 
     def run_extractors(self):
@@ -142,7 +162,8 @@ class RatesBasketEURUSDGBPUSDEURGBP:
         merged = pd.concat([eg_df, eu_df]).sort_values('time')
         merged = pd.concat([merged, gu_df]).sort_values('time')
         # merged = pd.concat([eg_df, eu_df, gu_df]).sort_values('time')
-        merged = merged.ffill().dropna().reset_index(drop=True)
+        merged = merged.groupby('time').max().reset_index()
+        merged = merged.ffill().bfill().reset_index(drop=True)
         merged['ask_line'] = merged['eurusd_bid_inverted'] * merged['gbpusd_ask'] * merged['eurgbp_ask']
         merged['bid_line'] = merged['eurusd_ask_inverted'] * merged['gbpusd_bid'] * merged['eurgbp_bid']
         self.basket_df = merged
@@ -154,8 +175,8 @@ if __name__ == '__main__':
 
     res = []
 
-    start = datetime(year=2024, month=2, day=26, tzinfo=timezone)
-    end = datetime(year=2024, month=2, day=27, tzinfo=timezone)
+    start = datetime(year=2024, month=1, day=1, tzinfo=timezone)
+    end = datetime(year=2024, month=3, day=2, tzinfo=timezone)
 
     for i in range((end-start).days):
         d1 = start + (i * timedelta(days=1))
@@ -166,9 +187,9 @@ if __name__ == '__main__':
         res.append((d1, prof, eurusd_prof, gbpusd_prof, num_trades))
         print('running total', round(sum([x[1] for x in res]), 2))
     res = pd.DataFrame(res, columns=['date', 'profit', 'eurusd', 'gbpusd', 'trades'])
-    # res['pnl'] = res['profit'].cumsum()
-    # plt.plot(res['pnl'])
-    # plt.show()
+    res['pnl'] = res['profit'].cumsum()
+    plt.plot(res['pnl'])
+    plt.show()
 
     print(res['profit'].sum(), res['profit'].mean(), res['eurusd'].sum(), res['gbpusd'].sum(), res['trades'].mean())
     a=1

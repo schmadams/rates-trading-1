@@ -20,7 +20,16 @@ strategies:
   demo_triarb_v1:
     account: demo_ava_10k
     lot: 0.1
+  demo_bnn_stoch_search_10k:
+    account: demo_fxpro_10k
+    lot: 0.1
+  demo_hedge_buy:
+    account: demo_ava_10k
+    lot: 0.1
   demo_analysis:
     account: demo_meta_100k
+    lot: 0.1
+  demo_rsi_eurusd:
+    account: demo_ava_10k
     lot: 0.1
 
