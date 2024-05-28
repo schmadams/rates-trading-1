@@ -78,9 +78,12 @@ class EURUSDRSIStrategy:
         rates = self.calc_rsi_col(rates, self.period, d1, d2)
         rate_ticks = pd.concat([rates, ticks]).sort_values(by='time')
         rate_ticks['close'] = rate_ticks['close'].ffill()
-        rate_ticks['mid'] = rate_ticks['ask'] - rate_ticks['bid']
+        rate_ticks['mid'] = rate_ticks['ask'] - (rate_ticks['ask'] - rate_ticks['bid'])/2
         rate_ticks['tick_delta'] = rate_ticks['mid'] - rate_ticks['close']
-
+        rate_ticks['gain'] = rate_ticks['gain'].ffill()
+        rate_ticks['loss'] = rate_ticks['loss'].ffill()
+        rate_ticks['gain'] = [gain + delta if delta > 0 else gain for gain, delta in zip(rate_ticks['gain'], rate_ticks['tick_delta'])]
+        rate_ticks['loss'] = [loss + abs(delta) if delta < 0 else loss for loss, delta in zip(rate_ticks['loss'], rate_ticks['tick_delta'])]
         return rates, ticks
 
     def calc_rsi_fly(self, vals, mid):
@@ -129,5 +132,5 @@ if __name__ == '__main__':
         end=datetime(year=2024, month=3, day=14),
         symbol='EURUSD',
         lot=0.01,
-        timeframe=mt5.TIMEFRAME_M5
+        timeframe=mt5.TIMEFRAME_M1
     )
